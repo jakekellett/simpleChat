@@ -2,7 +2,9 @@
 // "Object Oriented Software Engineering" and is issued under the open-source
 // license found at www.lloseng.com 
 
-import java.io.*;
+
+
+import common.ChatIF;
 import ocsf.server.*;
 
 /**
@@ -24,6 +26,8 @@ public class EchoServer extends AbstractServer
    */
   final public static int DEFAULT_PORT = 5555;
   
+  ChatIF serverConsole;
+  
   //Constructors ****************************************************
   
   /**
@@ -31,9 +35,15 @@ public class EchoServer extends AbstractServer
    *
    * @param port The port number to connect on.
    */
-  public EchoServer(int port) 
+  public EchoServer(int port, ChatIF serverConsole) 
   {
     super(port);
+    this.serverConsole = serverConsole;
+  }
+  
+  public EchoServer(int port)
+  {
+	  super(port);
   }
 
   
@@ -48,10 +58,23 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
+	if(serverConsole == null) {
+		System.out.println("Message received: " + msg + " from " + client);
+	}else {
+    serverConsole.display("Message received: " + msg + " from " + client);
+	}
 
     this.sendToAllClients(msg);
   
+  }
+  public void handleMessageFromServerUI(String message) {
+	  if(message.charAt(0) == '#') {
+  		command(message);
+  	}else {
+
+  		message = "SERVER MSG> " + message;
+      	sendToAllClients(message);
+  	}
   }
     
   /**
@@ -60,8 +83,11 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStarted()
   {
-    System.out.println
-      ("Server listening for connections on port " + getPort());
+	  if(serverConsole == null) {
+      System.out.println("Server listening for connections on port " + getPort());
+	  }else {
+		  serverConsole.display("Server listening for connections on port " + getPort());
+	  }
   }
   
   /**
@@ -70,8 +96,11 @@ public class EchoServer extends AbstractServer
    */
   protected void serverStopped()
   {
-    System.out.println
-      ("Server has stopped listening for connections.");
+	  if(serverConsole == null) {
+		  System.out.println("Server has stopped listening for connections.");
+	  }else {
+      serverConsole.display("Server has stopped listening for connections.");
+	  }
   }
   
   @Override
@@ -82,11 +111,62 @@ public class EchoServer extends AbstractServer
   
   
   @Override
-  synchronized protected void clientDisconnected(
+  protected void clientDisconnected(
 		    ConnectionToClient client) {
 	  sendToAllClients("A client has disconnected");
 	  
   }
+  public void command(String msg) {
+		 String message[] =  msg.split(" ");
+		 switch(message[0]) {
+		 	case"#quit":
+		 		try {
+		 		close();
+		 		}
+		 		catch(Exception e) {}
+		 		System.exit(0);
+		 		break;
+		 	case"#stop":
+		 		if(isListening()){
+		 		stopListening();
+		 		}
+		 		else {
+		 		serverConsole.display("Server not listening.");
+		 		}
+		 		break;
+		 	case"#start":
+		 		if(!isListening()) {
+		 			try {
+		 			listen();
+		 			}
+		 			catch(Exception e) {}
+		 		}else {
+		 			serverConsole.display("Server is not listening.");
+		 		}
+		 		break;
+		 	case"#close":
+		 		try {
+		 		close();
+		 		}
+		 		catch(Exception e) {}
+		 		break;
+		  	case"#setport":
+		  		String portname = message[1].replace("<","");
+		  		portname = portname.replace(">", "");
+		  		try {
+		  			int port = Integer.parseInt(portname);
+		  			setPort(port);
+		  		}catch(NumberFormatException e) {
+		  			serverConsole.display("Integer Port number was not found");
+			  }
+		  		break;
+		  	 case"#getport":
+		  		serverConsole.display(Integer.toString(getPort()));
+		  		break;
+		  	default:
+		  		serverConsole.display("Can not read command. Possible commands are:" + "\n" + "#quit, #close, #start, #stop, #setport <portnumber>, #getport");
+		 }
+	 }
   
   //Class methods ***************************************************
   

@@ -142,8 +142,10 @@ public class ChatClient extends AbstractClient
 		  }
 			 break;
 	  case"#gethost":
+		  clientUI.display(getHost());
 			 break;
 	  case"#getPort":
+		  clientUI.display(Integer.toString(getPort()));
 			 break;
 	  default:
 			clientUI.display("Can not read command. Possible commands are:" + "\n" + "#quit, #logoff, #sethost <hostname>, #setport <portnumber>" + "\n" + "#login, #getport, #setport");
