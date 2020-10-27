@@ -50,11 +50,11 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String loginID, String host, int port) 
   {
     try 
     {
-      client= new ChatClient(host, port, this);
+      client= new ChatClient(loginID, host, port, this);
       
       
     } 
@@ -120,7 +120,7 @@ public class ClientConsole implements ChatIF
   {
     String host = "";
     int port;
-
+    Scanner mainScanner = new Scanner(System.in);
 
     try
     {
@@ -144,7 +144,13 @@ public class ClientConsole implements ChatIF
     {
     	port = DEFAULT_PORT;
     }
-    ClientConsole chat= new ClientConsole(host, port);
+    System.out.println("Enter a login ID:");
+    String loginID = mainScanner.nextLine();
+    if(loginID.equals("")) {
+    	System.out.println("Please provide a valid Login ID next time. Closing now.");
+    	System.exit(0);
+    }
+    ClientConsole chat = new ClientConsole(loginID,host, port);
     chat.accept();  //Wait for console data
   }
 }
