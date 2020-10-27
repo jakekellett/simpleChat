@@ -63,8 +63,26 @@ public class EchoServer extends AbstractServer
 	}else {
     serverConsole.display("Message received: " + msg + " from " + client);
 	}
-
-    this.sendToAllClients(msg);
+	String [] msgArray = (msg.toString()).split(" ");
+	
+	if(msgArray[0].equals("#login")) {
+		if(client.getInfo("loginID") == null) {
+			client.setInfo("loginID", msgArray[1]);
+		}
+		else {
+			try {
+				client.sendToClient("You are already logged in. Terminating your connection now");
+				client.close();
+			}
+			catch (Exception e) {}
+			
+		}
+	
+	}else {
+		String loginID = (client.getInfo("loginID")).toString();		
+		msg = loginID + " - " + msg;
+		this.sendToAllClients(msg);
+	}
   
   }
   public void handleMessageFromServerUI(String message) {
@@ -122,6 +140,7 @@ public class EchoServer extends AbstractServer
 		 	case"#quit":
 		 		try {
 		 		close();
+		 		System.exit(0);
 		 		}
 		 		catch(Exception e) {}
 		 		System.exit(0);
