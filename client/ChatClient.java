@@ -68,7 +68,11 @@ public class ChatClient extends AbstractClient
   {
     try
     {
+    	if(message.charAt(0) == '#') {
+    		command(message);
+    	}else {
       sendToServer(message);
+    	}
     }
     catch(IOException e)
     {
@@ -89,6 +93,62 @@ public class ChatClient extends AbstractClient
     }
     catch(IOException e) {}
     System.exit(0);
+  }
+  
+  @Override
+  protected void connectionException(Exception exception) {
+	 clientUI.display("Connection to Server has been lost");
+	 quit();
+	}
+  
+ protected void command(String msg){
+	String message[] =  msg.split(" ");
+	  switch(message[0]) {
+	  case"#quit":
+		  quit();
+		  System.exit(0);
+		 break;
+	  case"#logoff":
+		  try
+		    {
+		      closeConnection();
+		    }
+		    catch(IOException e) {}
+		  break;
+		    
+	  case"#sethost":
+		  String hostname = message[1].replace("<"," ");
+		  hostname = hostname.replace(">", " ");
+		  setHost(hostname);		
+		  break;
+	  case"#setport":
+		  String portname = message[1].replace("<","");
+		  portname = portname.replace(">", "");
+		  try {
+			  int port = Integer.parseInt(portname);
+			  setPort(port);
+		  }catch(NumberFormatException e) {
+			  clientUI.display("Integer Port number was not found");
+		  }
+			 break;
+	  case"#login":
+		  if(isConnected()) {
+			  clientUI.display("Error: Client is already connected");
+		  }else {
+			  try {
+			  openConnection();
+			  }
+			  catch(IOException e){}
+		  }
+			 break;
+	  case"#gethost":
+			 break;
+	  case"#getPort":
+			 break;
+	  default:
+			clientUI.display("Can not read command. Possible commands are:" + "\n" + "#quit, #logoff, #sethost <hostname>, #setport <portnumber>" + "\n" + "#login, #getport, #setport");
+	  
+	  }
   }
 }
 //End of ChatClient class
