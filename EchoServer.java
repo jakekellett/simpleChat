@@ -68,6 +68,7 @@ public class EchoServer extends AbstractServer
 	if(msgArray[0].equals("#login")) {
 		if(client.getInfo("loginID") == null) {
 			client.setInfo("loginID", msgArray[1]);
+			this.sendToAllClients(client.getInfo("loginID") + " has logged in.");
 		}
 		else {
 			try {
@@ -90,7 +91,7 @@ public class EchoServer extends AbstractServer
   		command(message);
   	}else {
 
-  		message = "SERVER MSG> " + message;
+  		message = "SERVER MESSAGE> " + message;
       	sendToAllClients(message);
   	}
   }
@@ -123,17 +124,20 @@ public class EchoServer extends AbstractServer
   
   @Override
   protected void clientConnected(ConnectionToClient client) {
-	  sendToAllClients("A new client has connected");
+	  sendToAllClients("A new client is attempting to connect");
+  }
+  synchronized protected void clientDisconnected(
+		    ConnectionToClient client) {
+	  sendToAllClients(client.getInfo("loginID") + " has disconnected");
   }
   
   
   
   @Override
-  protected void clientDisconnected(
-		    ConnectionToClient client) {
-	  sendToAllClients("A client has disconnected");
-	  
+  synchronized protected void clientException(ConnectionToClient client, Throwable exception) {
+	  sendToAllClients(client.getInfo("loginID") + " has disconnected"); 
   }
+  
   public void command(String msg) {
 		 String message[] =  msg.split(" ");
 		 switch(message[0]) {

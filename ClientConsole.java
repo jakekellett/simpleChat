@@ -119,12 +119,21 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
     String host = "";
+    String loginID = "";
     int port;
     Scanner mainScanner = new Scanner(System.in);
-
+    
     try
     {
-      host = args[0];
+      loginID = args[0];
+    }
+    catch(ArrayIndexOutOfBoundsException e)
+    {
+      loginID = "";
+    }
+    try
+    {
+      host = args[1];
     }
     catch(ArrayIndexOutOfBoundsException e)
     {
@@ -133,7 +142,7 @@ public class ClientConsole implements ChatIF
     try
     {
     	try {
-    		port = Integer.parseInt(args[1]);
+    		port = Integer.parseInt(args[2]);
     	}
     	catch(NumberFormatException e){
     		port = DEFAULT_PORT;
@@ -144,8 +153,10 @@ public class ClientConsole implements ChatIF
     {
     	port = DEFAULT_PORT;
     }
+    if(loginID.equals("")) {
     System.out.println("Enter a login ID:");
-    String loginID = mainScanner.nextLine();
+    loginID = mainScanner.nextLine();
+    }
     if(loginID.equals("")) {
     	System.out.println("Please provide a valid Login ID next time. Closing now.");
     	System.exit(0);

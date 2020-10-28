@@ -45,8 +45,13 @@ public class ChatClient extends AbstractClient
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
     this.loginID = loginID;
+    try {
     openConnection();
     sendToServer("#login "+loginID);
+    }
+    catch(Exception e) {
+    	clientUI.display("Cannot open connection.  Awaiting command.");
+    }
   }
 
   
@@ -68,21 +73,27 @@ public class ChatClient extends AbstractClient
    * @param message The message from the UI.    
    */
   public void handleMessageFromClientUI(String message)
-  {
-    try
-    {
-    	if(message.charAt(0) == '#') {
-    		command(message);
-    	}else {
+  {		
+	  if(message.charAt(0) == '#') {
+  		command(message);
+  		}
+	  else if(!isConnected()) {
+		  clientUI.display("You are not connected, try logging in");
+	  }
+	  else {
+		  try
+		  {
+			  
       sendToServer(message);
-    	}
-    }
+			  
+		  }
     catch(IOException e)
     {
       clientUI.display
         ("Could not send message to server.  Terminating client.");
       quit();
     }
+	  }
   }
   
   /**
@@ -100,8 +111,13 @@ public class ChatClient extends AbstractClient
   
   @Override
   protected void connectionException(Exception exception) {
-	 clientUI.display("Connection to Server has been lost");
-	 quit();
+	 clientUI.display("WARNING - The server has stopped listening for connections\r\n" + 
+	 		"SERVER SHUTTING DOWN! DISCONNECTING!\r\n" + 
+	 		"");
+	 try {
+	 closeConnection();
+	 }
+	 catch(Exception e) {}
 	}
   
  protected void command(String msg){
@@ -114,6 +130,7 @@ public class ChatClient extends AbstractClient
 	  case"#logoff":
 		  try
 		    {
+			  clientUI.display("Logging off, closing connection now");
 		      closeConnection();
 		    }
 		    catch(IOException e) {}
@@ -140,15 +157,18 @@ public class ChatClient extends AbstractClient
 		  }else {
 			  try {
 			  openConnection();
+			  sendToServer("#login "+loginID);
 			  }
-			  catch(IOException e){}
+			  catch(Exception e){
+				  clientUI.display("Cannot open connection.  Awaiting command.");
+			  }
 		  }
 			 break;
 	  case"#gethost":
-		  clientUI.display(getHost());
+		  clientUI.display("Host set to: "+ getHost());
 			 break;
-	  case"#getPort":
-		  clientUI.display(Integer.toString(getPort()));
+	  case"#getport":
+		  clientUI.display("Port set to: "+ Integer.toString(getPort()));
 			 break;
 	  default:
 			clientUI.display("Can not read command. Possible commands are:" + "\n" + "#quit, #logoff, #sethost <hostname>, #setport <portnumber>" + "\n" + "#login, #getport, #setport");
